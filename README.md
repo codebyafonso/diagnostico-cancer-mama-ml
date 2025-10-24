@@ -24,26 +24,23 @@ Aplicação interativa em Streamlit que demonstra, com dados reais, técnicas de
 
 ```
 data/
-  breast_cancer_data.csv          # Dataset processado a partir do scikit-learn
-  kmeans_comparison.csv           # Resultado do clustering para comparação
-  metrics.json                    # Métricas do modelo (test set)
-docs/
-  Atividade Final - Machine Learning Aplicado à Saúde.md
-  Roteiro para Vídeo de Apresentação (5 a 8 minutos).md
+|  breast_cancer_data.csv          # Dataset processado a partir do scikit-learn
+|  kmeans_comparison.csv           # Resultado do clustering para comparação
+|  metrics.json                    # Métricas do modelo (test set)
 models/
-  logistic_regression_model.pkl   # Modelo de classificação (standalone)
-  model_pipeline.pkl              # Pipeline (StandardScaler + modelo)
-  pca.pkl                         # PCA treinado (2 componentes p/ visualização)
-  scaler.pkl                      # Scaler treinado (se usar standalone)
+|  logistic_regression_model.pkl   # Modelo de classificação (standalone)
+|  model_pipeline.pkl              # Pipeline (StandardScaler + modelo)
+|  pca.pkl                         # PCA treinado (2 componentes p/ visualização)
+|  scaler.pkl                      # Scaler treinado (se usar standalone)
 src/
-  app.py                          # Aplicação Streamlit principal
-  eda.py                          # Análise exploratória e geração de gráficos/base
-  models.py                       # Treino, avaliação e geração de artefatos
+|  app.py                          # Aplicação Streamlit principal
+|  eda.py                          # Análise exploratória e geração de gráficos/base
+|  models.py                       # Treino, avaliação e geração de artefatos
 visualizations/
-  correlation_heatmap.png         # Matriz de correlação (top 10 features)
-  mean_radius_boxplot.png         # Boxplot do mean radius por diagnóstico
-  pca_kmeans_visualization.png    # Projeção PCA com clusters K-Means
-  target_distribution.png         # Distribuição das classes
+|  correlation_heatmap.png         # Matriz de correlação (top 10 features)
+|  mean_radius_boxplot.png         # Boxplot do mean radius por diagnóstico
+|  pca_kmeans_visualization.png    # Projeção PCA com clusters K-Means
+|  target_distribution.png         # Distribuição das classes
 requirements.txt                  # Dependências do projeto
 README.md                         # Este arquivo
 ```
