@@ -7,6 +7,8 @@ import joblib
 from sklearn.datasets import load_breast_cancer
 import matplotlib.pyplot as plt
 import seaborn as sns
+import subprocess
+import sys
 
 # --- Configuração Inicial ---
 st.set_page_config(
@@ -70,9 +72,22 @@ df_full, feature_names = load_data()
 
 try:
     pipeline, scaler, model, pca, df_kmeans_comp, metrics = load_artifacts()
-except FileNotFoundError as e:
-    st.error(str(e))
-    st.stop()
+except FileNotFoundError:
+    with st.spinner("Gerando artefatos (EDA e modelos) pela primeira vez..."):
+        eda_script = BASE_DIR / "src" / "eda.py"
+        models_script = BASE_DIR / "src" / "models.py"
+        try:
+            subprocess.run([sys.executable, str(eda_script)], check=True)
+            subprocess.run([sys.executable, str(models_script)], check=True)
+        except Exception as gen_err:
+            st.error(f"Falha ao gerar artefatos automaticamente: {gen_err}")
+            st.stop()
+    # Tenta carregar novamente
+    try:
+        pipeline, scaler, model, pca, df_kmeans_comp, metrics = load_artifacts()
+    except Exception as e2:
+        st.error(f"Artefatos ainda ausentes ou inválidos: {e2}")
+        st.stop()
 
 # --- Título Principal ---
 st.title("Machine Learning na Saude: Diagnostico de Cancer de Mama")
