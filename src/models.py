@@ -27,7 +27,7 @@ VIS_DIR.mkdir(parents=True, exist_ok=True)
 df = pd.read_csv(DATA_DIR / 'breast_cancer_data.csv')
 
 # Split features and target
-X = df.drop(columns=['target', 'target_names'])
+X = df.drop(columns=['target', 'target_names', 'target_pt'])
 y = df['target']
 
 # 1) Preprocessing

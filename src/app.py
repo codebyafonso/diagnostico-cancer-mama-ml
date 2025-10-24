@@ -70,6 +70,50 @@ def load_artifacts():
 
 df_full, feature_names = load_data()
 
+# Mapas de tradução para PT-BR
+FEATURE_LABELS_PT = {
+    'mean radius': 'raio médio',
+    'mean texture': 'textura média',
+    'mean perimeter': 'perímetro médio',
+    'mean area': 'área média',
+    'mean smoothness': 'suavidade média',
+    'mean compactness': 'compacidade média',
+    'mean concavity': 'concavidade média',
+    'mean concave points': 'pontos côncavos médios',
+    'mean symmetry': 'simetria média',
+    'mean fractal dimension': 'dimensão fractal média',
+    'radius error': 'erro do raio',
+    'texture error': 'erro da textura',
+    'perimeter error': 'erro do perímetro',
+    'area error': 'erro da área',
+    'smoothness error': 'erro da suavidade',
+    'compactness error': 'erro da compacidade',
+    'concavity error': 'erro da concavidade',
+    'concave points error': 'erro dos pontos côncavos',
+    'symmetry error': 'erro da simetria',
+    'fractal dimension error': 'erro da dimensão fractal',
+    'worst radius': 'pior raio',
+    'worst texture': 'pior textura',
+    'worst perimeter': 'pior perímetro',
+    'worst area': 'pior área',
+    'worst smoothness': 'pior suavidade',
+    'worst compactness': 'pior compacidade',
+    'worst concavity': 'pior concavidade',
+    'worst concave points': 'piores pontos côncavos',
+    'worst symmetry': 'pior simetria',
+    'worst fractal dimension': 'pior dimensão fractal',
+}
+FEATURE_LABELS_PT_INV = {v: k for k, v in FEATURE_LABELS_PT.items()}
+
+TARGET_PT_MAP = {
+    'malignant': 'Maligno',
+    'benign': 'Benigno',
+}
+
+# Coluna auxiliar com rótulo da classe em PT para gráficos/legendas
+if 'target_names' in df_full.columns:
+    df_full['target_pt'] = df_full['target_names'].map(TARGET_PT_MAP).fillna(df_full['target_names'])
+
 try:
     pipeline, scaler, model, pca, df_kmeans_comp, metrics = load_artifacts()
 except FileNotFoundError:
@@ -90,12 +134,12 @@ except FileNotFoundError:
         st.stop()
 
 # --- Título Principal ---
-st.title("Machine Learning na Saude: Diagnostico de Cancer de Mama")
-st.markdown("Este projeto demonstra ML supervisionado (classificacao) e nao supervisionado (PCA + K-Means) aplicados ao diagnostico de tumores.")
+st.title("Machine Learning na Saúde: Diagnóstico de Câncer de Mama")
+st.markdown("Este projeto demonstra ML supervisionado (classificação) e não supervisionado (PCA + K-Means) aplicados ao diagnóstico de tumores.")
 
 # --- Sidebar para Navegação ---
-st.sidebar.title("Navegacao do Projeto")
-page = st.sidebar.radio("Explore as Secoes", [
+st.sidebar.title("Navegação do Projeto")
+page = st.sidebar.radio("Explore as Seções", [
     "1. Analise Exploratória de Dados (EDA)",
     "2. Classificacao (Supervisionada)",
     "3. Agrupamento (Nao Supervisionada)"
@@ -103,57 +147,125 @@ page = st.sidebar.radio("Explore as Secoes", [
 
 # --- SEÇÃO 1: EDA ---
 if page == "1. Analise Exploratória de Dados (EDA)":
-    st.header("1. Entendendo os Dados: Analise Exploratória")
-    st.info("Antes de modelar, entendemos a estrutura do dataset Breast Cancer Wisconsin.")
+    st.header("Entendendo os Dados: Analise Exploratória")
+    st.info("Equipe: Afonso Estevão Luna")
 
     # 1.1 Distribuição da Variável Alvo
-    st.subheader("Distribuicao do Diagnostico")
-    col1, col2, col3 = st.columns([1, 1, 2])
+    st.subheader("Distribuição do Diagnóstico")
+
+    # --- Calcular valores ---
+    benigno = int(df_full['target_names'].value_counts().get('benign', 0))
+    maligno = int(df_full['target_names'].value_counts().get('malignant', 0))
+    total = len(df_full)
+
+    p_benigno = benigno / total * 100
+    p_maligno = maligno / total * 100
+
+    # --- Layout ---
+    col1, col2, col3 = st.columns([1, 1, 1], gap="large")
+
+    style_box = """
+        text-align: center;
+        padding: 18px;
+        border-radius: 12px;
+        background-color: #F8F9FA;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    """
 
     with col1:
-        st.metric("Total de Amostras", len(df_full), "100%")
+        st.markdown(
+            f"""
+            <div style="{style_box}">
+                <h4 style='color:#2ECC71; margin-bottom:5px;'>Benigno</h4>
+                <h2 style='margin:0; font-size:2.5em;'>{benigno}</h2>
+                <p style='margin:3px auto 0 auto; color:#2ECC71; font-weight:bold; font-size:1.1em; text-align:center;'>{p_benigno:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True
+        )
+
     with col2:
-        benigno = int(df_full['target_names'].value_counts().get('benign', 0))
-        st.metric("Benigno", benigno, f"{benigno/len(df_full)*100:.1f}%")
+        st.markdown(
+            f"""
+            <div style="{style_box}">
+                <h4 style='color:#E74C3C; margin-bottom:5px;'>Maligno</h4>
+                <h2 style='margin:0; font-size:2.5em;'>{maligno}</h2>
+                <p style='margin:3px auto 0 auto; color:#E74C3C; font-weight:bold; font-size:1.1em; text-align:center;'>{p_maligno:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True
+        )
+
     with col3:
-        st.image(str(VIS_DIR / 'target_distribution.png'), caption='Contagem de casos Benignos e Malignos.')
+        st.markdown(
+            f"""
+            <div style="{style_box}">
+                <h4 style='color:#3498DB; margin-bottom:5px;'>Total de Amostras</h4>
+                <h2 style='margin:0; font-size:2.5em;'>{total}</h2>
+                <p style='margin:3px auto 0 auto; color:#3498DB; font-weight:bold; font-size:1.1em; text-align:center;'>100%</p>
+            </div>
+            """, unsafe_allow_html=True
+        )
+
+    # --- Imagem ---
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Container para centralizar a imagem
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image(
+            str(VIS_DIR / 'target_distribution.png'),
+            caption='Contagem de casos Benignos e Malignos.',
+            use_container_width=False,
+            width=600
+        )
+
+
 
     # 1.2 Boxplot de Feature Chave
-    st.subheader("Caracteristica Chave: Raio Medio")
-    st.markdown("O Raio Medio (mean radius) e uma feature crucial. O boxplot mostra maior raio medio para tumores malignos.")
-    st.image(str(VIS_DIR / 'mean_radius_boxplot.png'), caption='Boxplot de "mean radius" por Diagnostico.')
+    st.subheader("Característica Chave: Raio Médio")
+    st.markdown("O raio médio é uma característica crucial. O boxplot mostra maior raio médio para tumores malignos.")
+    st.image(str(VIS_DIR / 'mean_radius_boxplot.png'), caption='Boxplot de "raio médio" por Diagnóstico.')
 
     # 1.3 Matriz de Correlação
-    st.subheader("Relacao entre as Caracteristicas")
-    st.warning("Alta correlacao entre features de dimensao (Raio, Perimetro, Area) indica redundancia e oportunidade de usar PCA.")
-    st.image(str(VIS_DIR / 'correlation_heatmap.png'), caption='Matriz de Correlacao (Top 10 Features)')
+    st.subheader("Relação entre as Características")
+    st.warning("Alta correlação entre características de dimensão (Raio, Perímetro, Área) indica redundância e oportunidade de usar PCA.")
+    st.image(str(VIS_DIR / 'correlation_heatmap.png'), caption='Matriz de Correlação (Top 10 características)')
 
     # 1.4 Exploracoes Interativas
-    st.subheader("Exploracoes Interativas")
-    feature_sel = st.selectbox(
-        "Escolha uma feature para explorar",
-        options=list(df_full.drop(columns=['target']).columns),
+    st.subheader("Explorações Interativas")
+    feature_options_pt = [FEATURE_LABELS_PT.get(f, f) for f in feature_names]
+    feature_sel_pt = st.selectbox(
+        "Escolha uma característica para explorar",
+        options=feature_options_pt,
         index=0
     )
-    chart_type = st.radio("Tipo de grafico", ["Histograma", "Boxplot", "Violin"], horizontal=True)
+    feature_sel_en = FEATURE_LABELS_PT_INV.get(feature_sel_pt, feature_sel_pt)
+    chart_type = st.radio("Tipo de gráfico", ["Histograma", "Boxplot", "Violin"], horizontal=True)
     fig, ax = plt.subplots(figsize=(7, 4))
     if chart_type == "Histograma":
-        sns.histplot(data=df_full, x=feature_sel, hue='target_names', kde=True, ax=ax)
+        sns.histplot(data=df_full, x=feature_sel_en, hue='target_pt', kde=True, ax=ax)
+        ax.set_xlabel(feature_sel_pt)
+        ax.set_ylabel('Contagem')
     elif chart_type == "Boxplot":
-        sns.boxplot(data=df_full, x='target_names', y=feature_sel, ax=ax)
+        sns.boxplot(data=df_full, x='target_pt', y=feature_sel_en, ax=ax)
+        ax.set_xlabel('Diagnóstico')
+        ax.set_ylabel(feature_sel_pt)
     else:
-        sns.violinplot(data=df_full, x='target_names', y=feature_sel, ax=ax, inner='quartile', cut=0)
-    ax.set_xlabel(feature_sel)
+        sns.violinplot(data=df_full, x='target_pt', y=feature_sel_en, ax=ax, inner='quartile', cut=0)
+        ax.set_xlabel('Diagnóstico')
+        ax.set_ylabel(feature_sel_pt)
     st.pyplot(fig)
 
 # --- SEÇÃO 2: APRENDIZAGEM SUPERVISIONADA ---
 elif page == "2. Classificacao (Supervisionada)":
-    st.header("2. Previsao: Modelo de Classificacao")
-    st.info("Utilizamos Regressao Logistica para classificar tumores como Benignos ou Malignos com alta precisao.")
+    st.header("Previsão: Modelo de Classificação")
 
     # Interface de Input na página principal (não na sidebar)
     st.subheader("Simulador Interativo")
-    st.caption("Ajuste os parametros do tumor nas barras abaixo")
+    st.caption("Ajuste os parâmetros do tumor nas barras abaixo")
 
     cols = st.columns(2)
     input_data = {}
@@ -164,7 +276,7 @@ elif page == "2. Classificacao (Supervisionada)":
         mean_val = float(df_full[feature].mean())
         with cols[i % 2]:
             input_data[feature] = st.slider(
-                f"{feature.replace('mean ', '').title()}",
+                FEATURE_LABELS_PT.get(feature, feature),
                 min_val,
                 max_val,
                 mean_val
@@ -209,15 +321,15 @@ elif page == "2. Classificacao (Supervisionada)":
         p_benigno = float(prediction_proba[0][idx_benigno])
 
         # Apresentar o resultado
-        st.subheader("Resultado do Diagnostico:")
+        st.subheader("Resultado do Diagnóstico:")
         col_res, col_prob1, col_prob2 = st.columns(3)
 
         if int(prediction[0]) == 0:
             with col_res:
-                st.error("Diagnostico: MALIGNO (Alto Risco)")
+                st.error("Diagnóstico: MALIGNO (Alto Risco)")
         else:
             with col_res:
-                st.success("Diagnostico: BENIGNO (Baixo Risco)")
+                st.success("Diagnóstico: BENIGNO (Baixo Risco)")
 
         with col_prob1:
             st.metric("Probabilidade Maligno", f"{p_maligno*100:.2f}%")
@@ -243,10 +355,10 @@ F1-Score (Maligno): {f1_maligno:.4f}
 F1-Score (Benigno): {f1_benigno:.4f}
 """)
     else:
-        st.info("Metricas nao encontradas. Execute src/models.py para gerar metrics.json.")
+        st.info("Métricas não encontradas. Execute src/models.py para gerar metrics.json.")
 
     # Importancia das features (coeficientes da Regressao Logistica)
-    st.subheader("Importancia das Features (Coeficientes)")
+    st.subheader("Importância das Características (Coeficientes)")
     clf = None
     if pipeline is not None:
         try:
@@ -263,31 +375,33 @@ F1-Score (Benigno): {f1_benigno:.4f}
     if clf is not None and hasattr(clf, 'coef_'):
         coefs = clf.coef_[0]
         coef_df = pd.DataFrame({
-            'feature': feature_names,
+            'feature_en': feature_names,
             'coef': coefs,
             'abs_coef': np.abs(coefs)
-        }).sort_values('abs_coef', ascending=False).head(10)
+        })
+        coef_df['feature_pt'] = coef_df['feature_en'].map(FEATURE_LABELS_PT).fillna(coef_df['feature_en'])
+        coef_df = coef_df.sort_values('abs_coef', ascending=False).head(10)
         fig_coef, ax_coef = plt.subplots(figsize=(8, 5))
-        sns.barplot(y='feature', x='coef', data=coef_df, ax=ax_coef, palette='vlag')
+        sns.barplot(y='feature_pt', x='coef', data=coef_df, ax=ax_coef, palette='vlag')
         ax_coef.set_title('Top 10 coeficientes (positivo=Benigno, negativo=Maligno)')
         ax_coef.set_xlabel('Coeficiente')
-        ax_coef.set_ylabel('Feature')
+        ax_coef.set_ylabel('Característica')
         st.pyplot(fig_coef)
 
 # --- SEÇÃO 3: APRENDIZAGEM NÃO SUPERVISIONADA ---
 elif page == "3. Agrupamento (Nao Supervisionada)":
-    st.header("3. Desvendando Padrões: PCA e K-Means")
+    st.header("Desvendando Padrões: PCA e K-Means")
     st.info("PCA para visualizar os dados em 2D e K-Means para descobrir agrupamentos sem usar o rotulo de diagnostico.")
 
-    st.subheader("Visualizacao dos Clusters")
-    st.image(str(VIS_DIR / 'pca_kmeans_visualization.png'), caption='Projecao 2D (PCA) colorida pelos clusters K-Means (k=2).')
+    st.subheader("Visualização dos Clusters")
+    st.image(str(VIS_DIR / 'pca_kmeans_visualization.png'), caption='Projeção 2D (PCA) colorida pelos clusters K-Means (k=2).')
 
-    st.subheader("Analise do PCA: Simplificando 30 Dimensoes")
+    st.subheader("Análise do PCA: Simplificando 30 Dimensões")
     explained_variance = pca.explained_variance_ratio_
     total_variance = explained_variance.sum()
     col_pca1, col_pca2, col_pca_total = st.columns(3)
     with col_pca_total:
-        st.metric("Variancia Total Explicada", f"{total_variance*100:.2f}%")
+        st.metric("Variância Total Explicada", f"{total_variance*100:.2f}%")
     with col_pca1:
         st.metric("PC1 (Eixo Principal)", f"{explained_variance[0]*100:.2f}%")
     with col_pca2:
@@ -295,13 +409,14 @@ elif page == "3. Agrupamento (Nao Supervisionada)":
 
     st.markdown("- Insight: Dois componentes capturam grande parte da informacao, validando a reducao de dimensionalidade.")
 
-    st.subheader("Coerencia do K-Means com o Diagnostico Real")
+    st.subheader("Coerência do K-Means com o Diagnóstico Real")
     st.markdown("O K-Means foi capaz de distinguir casos malignos e benignos sem conhecer as respostas reais.")
 
 
-    contingency_table = pd.crosstab(df_kmeans_comp['target_names'], df_kmeans_comp['Cluster'])
-    if 'malignant' in contingency_table.index and 0 in contingency_table.columns and 1 in contingency_table.columns:
-        if contingency_table.loc['malignant', 0] > contingency_table.loc['malignant', 1]:
+    target_pt_series = df_kmeans_comp['target_names'].map(TARGET_PT_MAP).fillna(df_kmeans_comp['target_names'])
+    contingency_table = pd.crosstab(target_pt_series, df_kmeans_comp['Cluster'])
+    if 'Maligno' in contingency_table.index and 0 in contingency_table.columns and 1 in contingency_table.columns:
+        if contingency_table.loc['Maligno', 0] > contingency_table.loc['Maligno', 1]:
             contingency_table.columns = ['Cluster 0 (Majoritariamente Maligno)', 'Cluster 1 (Majoritariamente Benigno)']
         else:
             contingency_table.columns = ['Cluster 0 (Majoritariamente Benigno)', 'Cluster 1 (Majoritariamente Maligno)']
@@ -310,16 +425,16 @@ elif page == "3. Agrupamento (Nao Supervisionada)":
     st.success("Conclusao: O K-Means agrupou os dados de forma bem alinhada ao diagnostico real, indicando separacao natural entre os tumores.")
 
     # Graficos adicionais de agrupamento
-    st.subheader("Distribuicao dos Clusters")
+    st.subheader("Distribuição dos Clusters")
     cluster_counts = df_kmeans_comp['Cluster'].value_counts().sort_index()
     st.bar_chart(cluster_counts)
 
-    st.subheader("Contingencia (Heatmap)")
+    st.subheader("Contingência (Heatmap)")
     fig_ct, ax_ct = plt.subplots(figsize=(6, 4))
-    contingency_table = pd.crosstab(df_kmeans_comp['target_names'], df_kmeans_comp['Cluster'])
+    contingency_table = pd.crosstab(target_pt_series, df_kmeans_comp['Cluster'])
     sns.heatmap(contingency_table, annot=True, fmt='d', cmap='Blues', ax=ax_ct)
     ax_ct.set_xlabel('Cluster')
-    ax_ct.set_ylabel('Diagnostico real')
+    ax_ct.set_ylabel('Diagnóstico real')
     st.pyplot(fig_ct)
 
 # --- Rodapé ---
