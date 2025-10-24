@@ -13,7 +13,7 @@ import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Robust directories
+# Diretórios robustos
 BASE_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = BASE_DIR / "data"
 MODELS_DIR = BASE_DIR / "models"
@@ -23,19 +23,19 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
 VIS_DIR.mkdir(parents=True, exist_ok=True)
 
-# Load dataset
+# Carregar dataset
 df = pd.read_csv(DATA_DIR / 'breast_cancer_data.csv')
 
-# Split features and target
+# Separar features e target
 X = df.drop(columns=['target', 'target_names', 'target_pt'])
 y = df['target']
 
-# 1) Preprocessing
+# 1) Pré-processamento
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 joblib.dump(scaler, MODELS_DIR / 'scaler.pkl')
 
-# 2) Supervised learning: Logistic Regression
+# 2) Aprendizagem supervisionada: Regressão Logística
 print("--- Aprendizagem Supervisionada: Regressao Logistica ---")
 X_train, X_test, y_train, y_test = train_test_split(
     X_scaled, y, test_size=0.3, random_state=42, stratify=y
@@ -47,7 +47,7 @@ y_pred = log_reg.predict(X_test)
 report_txt = classification_report(y_test, y_pred, target_names=['Maligno', 'Benigno'])
 print("\nRelatorio de Classificacao:\n", report_txt)
 
-# Save metrics for the app
+# Salvar métricas para o app
 metrics = {
     'accuracy': float(accuracy_score(y_test, y_pred)),
     'report': classification_report(y_test, y_pred, target_names=['Maligno', 'Benigno'], output_dict=True),
@@ -55,7 +55,7 @@ metrics = {
 with (DATA_DIR / 'metrics.json').open('w', encoding='utf-8') as f:
     json.dump(metrics, f, ensure_ascii=False, indent=2)
 
-# Save standalone model and a pipeline (scaler + model)
+# Salvar modelo standalone e um pipeline (scaler + modelo)
 joblib.dump(log_reg, MODELS_DIR / 'logistic_regression_model.pkl')
 pipeline = Pipeline([
     ('scaler', StandardScaler()),
@@ -64,7 +64,7 @@ pipeline = Pipeline([
 pipeline.fit(X, y)
 joblib.dump(pipeline, MODELS_DIR / 'model_pipeline.pkl')
 
-# 3) Unsupervised learning: PCA and KMeans
+# 3) Aprendizagem não supervisionada: PCA e K-Means
 print("\n--- Aprendizagem Nao Supervisionada: PCA e K-Means ---")
 pca = PCA(n_components=2)
 X_pca = pca.fit_transform(X_scaled)

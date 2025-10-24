@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.datasets import load_breast_cancer
 
-# 0. Project directories (robust to CWD)
+# 0. Diretórios do projeto (robusto ao diretório de trabalho)
 BASE_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = BASE_DIR / "data"
 VIS_DIR = BASE_DIR / "visualizations"
@@ -13,7 +13,7 @@ VIS_DIR = BASE_DIR / "visualizations"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 VIS_DIR.mkdir(parents=True, exist_ok=True)
 
-# 1. Load dataset
+# 1. Carregar dataset
 data = load_breast_cancer(as_frame=True)
 df = data.frame
 df["target"] = data.target
@@ -58,7 +58,7 @@ FEATURE_LABELS_PT = {
 }
 df['target_pt'] = df['target_names'].map(TARGET_PT_MAP).fillna(df['target_names'])
 
-# 2. Basic info
+# 2. Informações básicas
 print("--- Informacoes do Dataset ---")
 print(df.info())
 print("\n--- Primeiras Linhas ---")
@@ -66,12 +66,12 @@ print(df.head())
 print("\n--- Estatisticas Descritivas ---")
 print(df.describe().T)
 
-# 3. Target distribution
+# 3. Distribuição da variável alvo
 print("\n--- Distribuicao da Variavel Alvo ---")
 target_counts = df["target_names"].value_counts()
 print(target_counts)
 
-# Target distribution plot
+# Gráfico de distribuição da variável alvo
 plt.figure(figsize=(6, 4))
 sns.countplot(x="target_pt", data=df)
 plt.title("Distribuição da Classe (Maligno vs. Benigno)")
@@ -80,7 +80,7 @@ plt.ylabel("Contagem")
 plt.savefig(VIS_DIR / "target_distribution.png")
 plt.close()
 
-# 4. Correlation analysis
+# 4. Análise de correlação
 features = list(data.feature_names)
 corr_matrix = df[features].corr()
 
@@ -94,7 +94,7 @@ plt.title("Matriz de Correlação (Top 10 características)")
 plt.savefig(VIS_DIR / "correlation_heatmap.png")
 plt.close()
 
-# 5. Key feature distribution (mean radius by target)
+# 5. Distribuição da característica chave (raio médio por target)
 plt.figure(figsize=(10, 6))
 sns.boxplot(x="target_pt", y="mean radius", data=df)
 plt.title('Distribuição de "raio médio" por Diagnóstico')
@@ -105,6 +105,6 @@ plt.close()
 
 print("\nEDA concluida. Arquivos salvos na pasta 'visualizations/'.")
 
-# Save processed dataframe for later stages
+# Salvar dataframe processado
 df.to_csv(DATA_DIR / "breast_cancer_data.csv", index=False)
 print("DataFrame salvo em 'data/breast_cancer_data.csv'.")
